@@ -21,12 +21,12 @@ public class WiseSaying {
             } else if (command.equalsIgnoreCase("종료")) {
                 break;
             } else if (command.equalsIgnoreCase("목록")) {
-                WisdomShow.show(wisdomRegistry.getWisdomList());
+                WisdomShow.show(wisdomRegistry.getWisdomMap());
             } else if (command.equalsIgnoreCase("삭제")) {
-                Wisdomdelete.deleteById();
+                Wisdomdelete.deleteById(wisdomRegistry.getWisdomMap());
                 wisdomRegistry.loadWisdomsFromJson();
             } else if (command.equalsIgnoreCase("수정")) {
-                WisdomEdit.edit();
+                WisdomEdit.edit(wisdomRegistry.getWisdomMap());
             }
         }
     }

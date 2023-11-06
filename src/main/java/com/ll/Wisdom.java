@@ -22,6 +22,17 @@ public class Wisdom {
     public String getArtist() {
         return artist;
     }
-    
+
+    public void setSaying(String newSaying) {
+        this.saying = newSaying;
+    }
+
+    public void setArtist(String newArtist) {
+        this.artist = newArtist;
+    }
+
+    public void setId(int newId) {
+        this.id = newId;
+    }
 }
 
