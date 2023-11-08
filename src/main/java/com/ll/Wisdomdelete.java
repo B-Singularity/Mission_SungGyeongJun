@@ -8,6 +8,7 @@ import com.google.gson.JsonObject;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.Scanner;
 
 public class Wisdomdelete {
@@ -23,39 +24,41 @@ public class Wisdomdelete {
         }
     }
 
-    public static void deleteById() {
-        System.out.println("삭제할 명언의 ID를 입력하세요: ");
+    public static void deleteById(HashMap<Integer, Wisdom> wisdomMap) {
+        System.out.print("삭제할 명언의 ID를 입력하세요: ");
         int idToDelete = scanner.nextInt();
 
-        JsonArray jsonArray = readJsonFile();
+        if (wisdomMap.containsKey(idToDelete)) {
+            wisdomMap.remove(idToDelete);
+            adjustIdsAfterDeletion(wisdomMap, idToDelete);
+            updateJsonFile(wisdomMap);
+            System.out.println(idToDelete + "번 명언이 삭제되었습니다.");
+        } else {
+            System.out.println(idToDelete + "번 명언을 찾을 수 없습니다.");
+        }
+    }
 
-        if (jsonArray != null) {
-            boolean deleted = false;
-            for (int i = 0; i < jsonArray.size(); i++) {
-                JsonObject wisdomObject = jsonArray.get(i).getAsJsonObject();
-                int wisdomId = wisdomObject.get("id").getAsInt();
-                if (wisdomId == idToDelete) {
-                    jsonArray.remove(i);
-                    deleted = true;
-                    for (int j = i; j < jsonArray.size(); j++) {
-                        wisdomObject = jsonArray.get(j).getAsJsonObject();
-                        wisdomId = wisdomObject.get("id").getAsInt();
-                        wisdomObject.addProperty("id", wisdomId - 1);
-                    }
-                    break;
-                }
-            }
-
-            if (deleted) {
-                writeJsonFile(jsonArray);
-                System.out.println(idToDelete + "번 명언이 삭제되었습니다.");
-                WisdomRegistry.loadWisdomsFromJson();
-            } else {
-                System.out.println(idToDelete + "번 명언을 찾을 수 없습니다.");
+    private static void adjustIdsAfterDeletion(HashMap<Integer, Wisdom> wisdomMap, int deletedId) {
+        for (int id : wisdomMap.keySet()) {
+            if (id > deletedId) {
+                Wisdom wisdom = wisdomMap.get(id);
+                wisdomMap.remove(id);
+                wisdom.setId(id - 1);
+                wisdomMap.put(id - 1, wisdom);
             }
         }
     }
-    private static void writeJsonFile(JsonArray jsonArray) {
+
+    private static void updateJsonFile(HashMap<Integer, Wisdom> wisdomMap) {
+        JsonArray jsonArray = new JsonArray();
+        for (Wisdom wisdom : wisdomMap.values()) {
+            JsonObject jsonObject = new JsonObject();
+            jsonObject.addProperty("id", wisdom.getId());
+            jsonObject.addProperty("saying", wisdom.getSaying());
+            jsonObject.addProperty("artist", wisdom.getArtist());
+            jsonArray.add(jsonObject);
+        }
+
         try (FileWriter fileWriter = new FileWriter(JSON_FILE_PATH)) {
             fileWriter.write(jsonArray.toString());
         } catch (IOException e) {

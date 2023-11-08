@@ -1,62 +1,52 @@
 package com.ll;
 
-import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 
-import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.Scanner;
 
 public class WisdomEdit {
     private static final String JSON_FILE_PATH = "src/main/resources/wisdoms.json";
     private static Scanner scanner = new Scanner(System.in);
-    private static JsonArray readJsonFile() {
-        try (FileReader reader = new FileReader(JSON_FILE_PATH)) {
-            return new Gson().fromJson(reader, JsonArray.class);
-        } catch (IOException e) {
-            e.printStackTrace();
-            return null;
-        }
-    }
 
-    public static void edit() {
+    public static void edit(HashMap<Integer, Wisdom> wisdomMap) {
         System.out.println("수정할 명언의 ID를 입력하세요: ");
         int idToEdit = scanner.nextInt();
 
-        JsonArray jsonArray = readJsonFile();
+        if (wisdomMap.containsKey(idToEdit)) {
+            Wisdom wisdomToEdit = wisdomMap.get(idToEdit);
 
-        if(jsonArray != null) {
-            boolean edited = false;
-            for (int i = 0; i < jsonArray.size(); i++) {
-                JsonObject wisdomObject = jsonArray.get(i).getAsJsonObject();
-                int wisdomId = wisdomObject.get("id").getAsInt();
-                if (wisdomId == idToEdit) {
-                    System.out.println("수정할 명언: ");
-                    String newSaying = scanner.next();
-                    System.out.println("수정할 작가: ");
-                    String newArtist = scanner.next();
+            System.out.println("현재 명언: " + wisdomToEdit.getSaying());
+            System.out.println("수정할 명언: ");
+            String newSaying = scanner.next();
 
-                    wisdomObject.addProperty("saying", newSaying);
-                    wisdomObject.addProperty("artist", newArtist);
+            System.out.println("현재 작가: " + wisdomToEdit.getArtist());
+            System.out.println("수정할 작가: ");
+            String newArtist = scanner.next();
 
-                    edited = true;
-                    break;
+            wisdomToEdit.setSaying(newSaying);
+            wisdomToEdit.setArtist(newArtist);
 
-                }
-            }
-
-            if (edited) {
-                writeJsonFile(jsonArray);
-                System.out.println(idToEdit + "번 명언이 수정되었습니다.");
-                WisdomRegistry.loadWisdomsFromJson();
-            } else {
-                System.out.println(idToEdit + "번 명언을 찾을 수 없습니다.");
-            }
+            updateJsonFile(wisdomMap);
+            System.out.println(idToEdit + "번 명언이 수정되었습니다.");
+        } else {
+            System.out.println(idToEdit + "번 명언을 찾을 수 없습니다.");
         }
     }
-    private static void writeJsonFile(JsonArray jsonArray) {
+
+    private static void updateJsonFile(HashMap<Integer, Wisdom> wisdomMap) {
+        JsonArray jsonArray = new JsonArray();
+        for (Wisdom wisdom : wisdomMap.values()) {
+            JsonObject jsonObject = new JsonObject();
+            jsonObject.addProperty("id", wisdom.getId());
+            jsonObject.addProperty("saying", wisdom.getSaying());
+            jsonObject.addProperty("artist", wisdom.getArtist());
+            jsonArray.add(jsonObject);
+        }
+
         try (FileWriter fileWriter = new FileWriter(JSON_FILE_PATH)) {
             fileWriter.write(jsonArray.toString());
         } catch (IOException e) {
@@ -65,4 +55,3 @@ public class WisdomEdit {
         }
     }
 }
-
